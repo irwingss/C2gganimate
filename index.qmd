@@ -33,71 +33,9 @@ library(gapminder)
 library(patchwork)
 ```
 
-## 1. Generando cuatro gráficos para trabajar con ellos
+# 1. Gráficos animados con gganimate
 
-Lectura de base de datos. Descarga la base de datos en: [Documento excel](https://github.com/irwingss/ArchivosCuestionarios/raw/main/multiplicata_fvs_choice_updated2020.xlsx)
-
-```{r}
-DF <- openxlsx::read.xlsx("multiplicata_fvs_choice_updated2020.xlsx")
-
-```
-
-```{r}
-A <- DF %>% 
-  filter(!yr_collected %in% 2007:2009) %>% 
-  ggplot(aes(x=svl_hi, y=mass_hi))+
-  geom_point(size=3, alpha=0.3, color="coral")+
-  facet_wrap(~yr_collected, ncol=2)+
-  labs(x="Longitud Hocico-Respiradero (SVL)",
-       y="Condición corporal (mass/SVL)",
-       tag="A")+
-  ggpubr::stat_cor(aes(label = paste(..r.label.., 
-                                     ..p.label.., 
-                                     sep = "~")), 
-                   color = "black", geom = "text",
-                   label.x = 35, label.y = 20, size=3.5)+
-  theme_test()+
-  theme(legend.position="none",
-        plot.background=element_rect(fill="gray90"),
-        panel.background=element_rect(fill="gray90"),
-        strip.background=element_rect(fill="gray80"))
-A
-
-B <- DF %>% 
-  filter(!yr_collected %in% 2007:2009) %>% 
-  ggplot(aes(x=svl_hi, y=mass_hi, color=factor(yr_collected)))+
-  geom_smooth(method="lm", se=FALSE)+
-  geom_point(size=3, alpha=0.3)+
-  facet_wrap(~yr_collected, ncol=2)+
-  ggpubr::stat_regline_equation(label.x = 35, label.y = 23,
-        aes(label =  paste(..eq.label.., 
-                           ..adj.rr.label.., 
-                           sep = "~~~~")))+
-  scale_y_continuous(limits=c(0,25))+
-  scale_x_continuous(breaks=seq(0,60,5))+
-  ggthemes::scale_color_tableau(palette="Classic 10")+
-  labs(x="Longitud Hocico-Respiradero (SVL)",
-       y="Condición corporal (mass/SVL)",
-       tag="B")+
-  theme_test()+
-  theme(legend.position="none",
-        plot.background=element_rect(fill="gray90"),
-        panel.background=element_rect(fill="gray90"),
-        strip.background=element_rect(fill="gray80"))
-B
-```
-
-```{r}
-C <- iris %>% 
-  ggplot(aes(Petal.Length, Sepal.Length))+
-  geom_point()
-
-D <- iris %>% 
-  ggplot(aes(Petal.Length, Species))+
-  geom_boxplot()
-```
-
-# 2. Gráficos animados con gganimate
+Es básicamente la misma estructura de código que un gráfico de **ggplot2** cualquiera, al cual se le suma una función de **gganimate**. Nota cómo aquí al gráfico se le adiciona la función `transition_time()` especificando la columna de cambio temporal `year`.
 
 ```{r}
 # Creemos un gráfico estático
@@ -117,7 +55,16 @@ Grafico <- Grafico +
 Grafico
 ```
 
-## 2.1. Transiciones temporales en gráficos de dispersión de puntos
+## 1.1. Transiciones temporales en gráficos de dispersión de puntos
+
+Una sintaxis especial del código de **gganimate** para las etiquetas temporales es utilizar dentro del título el código `{frame_time}` que importa la categoría temporal a la que corresponde cada cuadro del GIF animado y lo imprime en la etiqueta. Es clásico colocar esto en el título.
+
+En esta sección verás el uso de más funciones 
+- `view_follow(fixed_y = TRUE)`
+- `shadow_wake(wake_length = 0.1, alpha = FALSE)`
+- `shadow_mark(alpha = 0.3, size = 0.5)`
+
+Que le dan un toque distintivo a cada gráfico.
 
 ```{r}
 # Creemos un gráfico estático
@@ -157,7 +104,9 @@ p + transition_time(year) +
   shadow_mark(alpha = 0.3, size = 0.5)
 ```
 
-## 2.2. Transiciones temporales en gráficos de líneas
+## 1.2. Transiciones temporales en gráficos de líneas
+
+La transición de líneas se aplica con `transition_reveal()` especificando la variable que aparezca en el eje X para realizar el revelado. En este caso, el eje X es la variable `Day`.
 
 ```{r}
 # Creemos un gráfico de lineas simple
@@ -186,7 +135,9 @@ Z +
   transition_reveal(Day)
 ```
 
-## 2.3. Exportando GIFs animados en alta calidad
+## 1.3. Exportando GIFs animados en alta calidad
+
+Se recomienda ir probando la resolución (argumento `res`) de `animate()`. Valores superiores a 150 píxeles por pulgada suelen demorar demasiado.
 
 ```{r, eval=FALSE}
 # Se debe guardar el gráfico animado final en un objeto
